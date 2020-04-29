@@ -38,6 +38,11 @@ int main(int argc, char const *argv[])
 	int cur_exec  = -1; // currently executing proc, -1 means none proc executing
 	int next_exec = -1;
 	int now_time = 0;
+	int RR_turn = 0;
+	int RR_queue[30]={0};
+	int RR_queue_in[30]={0};
+	int RR_s=0;
+	int RR_e=0;
 	while(1){
 		//let's fork all the available proc!
 		for (int i = 0; i < proc_num; ++i){
@@ -56,19 +61,40 @@ int main(int argc, char const *argv[])
 		if (strcmp(sched_type,"FIFO") == 0)
 			next_exec = FIFO(proc_list, proc_num, now_time);// if can't run any, return -1
 		printf("%d, %d\n",now_time,next_exec );
-		// if (strcmp(sched_type,"RR") == 0)
-		// 	RR(proc_list);
-		// if (strcmp(sched_type,"SJF") == 0)
-		// 	SJF(proc_list);
-		// if (strcmp(sched_type,"PSJF") == 0)
-		// 	PSJF(proc_list);
+
+		if (strcmp(sched_type,"RR") == 0){
+			if (cur_exec != -1){//has proc
+				if (RR_turn>=500){//pop
+					RR_pop(cur_exec, RR_queue_in,RR_queue, &RR_s, &RR_e);
+					next_exec = RR_push(proc_list,proc_num, now_time,cur_exec, RR_queue_in,RR_queue, &RR_s, &RR_e);
+					RR_turn = 0;
+				}
+				else
+					next_exec = cur_exec;
+			}
+			else// no current proc
+				next_exec = RR_push(proc_list,proc_num, now_time,cur_exec, RR_queue_in,RR_queue, &RR_s, &RR_e);
+			if (next_exec != -1)//run something
+				RR_turn+=1;
+		}
+		if (strcmp(sched_type,"SJF") == 0){
+			if (cur_exec != -1 && proc_list[cur_exec].e_time > 0){//some proc running
+				next_exec = cur_exec;
+			}
+			else
+				next_exec = SJF(proc_list, proc_num, now_time);
+		}
+		if (strcmp(sched_type,"PSJF") == 0)
+			next_exec = PSJF(proc_list, proc_num, now_time);
 		//run next
 		if (next_exec != cur_exec){//context switch
 			if (cur_exec!=-1)//has runnging proc, give low priority
 				set_block(proc_list[cur_exec].pid);
 			printf("unblock %s\n",proc_list[next_exec].proc_name );
-			set_unblock(proc_list[next_exec].pid);
-			write_log(proc_list[next_exec], "UNBLOCK");
+			if (next_exec!=-1){
+				set_unblock(proc_list[next_exec].pid);
+				write_log(proc_list[next_exec], "UNBLOCK");
+			}
 		}
 		cur_exec = next_exec;
 		run_unit();
