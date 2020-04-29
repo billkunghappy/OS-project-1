@@ -1,5 +1,7 @@
+#define __USE_GNU  
 #include <sched.h>
 #include <unistd.h>
+#include <sys/time.h>
 struct proc
 {
 	pid_t pid;
@@ -37,8 +39,23 @@ void set_block(int pid)
 int run_proc(Proc proc_i){
 	int pid = fork();
 	if (pid == 0) {//child!
-		for (int i = 0; i < proc_i.e_time; i++)
+		char buff[100] ;
+		struct timeval  tv;
+		FILE *fp;
+		fp = fopen("test.txt", "a");//opening file  
+		gettimeofday(&tv, NULL);
+		double time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ;
+		sprintf(buff,"Start Proc[%s], time: %lf\n", proc_i.proc_name,time_in_mill);
+    	fprintf(fp, buff);//writing data into file
+
+		for (int i = 0; i < proc_i.e_time; i++){
 			run_unit();
+			fprintf(fp, proc_i.proc_name);//writing data into file
+   		}
+		gettimeofday(&tv, NULL);
+		time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ;
+		sprintf(buff,"Proc[%s], time: %lf\n", proc_i.proc_name,time_in_mill);
+    	fprintf(fp, buff);//writing data into file
 		exit(0);
 	}
 	set_cpu(pid, 1);//child cpu is 1

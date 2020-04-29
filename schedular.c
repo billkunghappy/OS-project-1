@@ -1,6 +1,6 @@
 #include "proc.c"
 
-int FIFO(Proc proc_list, int proc_num, int now_time){
+int FIFO(Proc proc_list[], int proc_num, int now_time){
 	for (int i = 0; i < proc_num; ++i){
 		if (proc_list[i].r_time <= now_time && proc_list[i].e_time > 0)
 			return i;
