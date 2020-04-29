@@ -1,4 +1,7 @@
-#include "proc.c"
+#define _GNU_SOURCE  
+#include <stdio.h>
+#include <sched.h>
+#include "schedular.h"
 
 int FIFO(Proc proc_list[], int proc_num, int now_time){
 	for (int i = 0; i < proc_num; ++i){

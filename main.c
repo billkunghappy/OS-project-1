@@ -1,9 +1,12 @@
+#define _GNU_SOURCE  
 #include <stdio.h>
 #include <stdlib.h>
+#include <sched.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "schedular.c"
+#include "proc.h"
+#include "schedular.h"
 
 
 int cmp(const void *a, const void *b){
@@ -39,10 +42,14 @@ int main(int argc, char const *argv[])
 		//let's fork all the available proc!
 		for (int i = 0; i < proc_num; ++i){
 			if (proc_list[i].e_time > 0 && proc_list[i].r_time == now_time){
+				printf("run %s !\n",proc_list[i].proc_name );
 				//let's run!
 				proc_list[i].pid = run_proc(proc_list[i]);
 				//block it first
 				set_block(proc_list[i].pid);
+				write_log(proc_list[i], "BLOCK");
+
+				printf("block %s\n",proc_list[i].proc_name );
 			}
 		}
 		//check which proc to run
@@ -61,8 +68,10 @@ int main(int argc, char const *argv[])
 				set_block(proc_list[cur_exec].pid);
 			printf("unblock %s\n",proc_list[next_exec].proc_name );
 			set_unblock(proc_list[next_exec].pid);
+			write_log(proc_list[next_exec], "UNBLOCK");
 		}
 		cur_exec = next_exec;
+		run_unit();
 		if (cur_exec != -1)
 			proc_list[cur_exec].e_time -= 1;
 		//Check if its done
