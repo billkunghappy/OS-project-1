@@ -9,7 +9,7 @@
 #define GET_TIME 333
 #define PRINTK 334
 void run_unit(){
-	volatile unsigned long i; for(i=0;i<100000UL;i++);
+	volatile unsigned long i; for(i=0;i<1000000UL;i++);
 }
 void set_cpu(int pid, int core_index)
 {
