@@ -19,7 +19,7 @@ int cmp(const void *a, const void *b){
 int main(int argc, char const *argv[])
 {
 	// set highest priority for this proc
-	set_cpu(getpid(),0);
+	set_cpu(getpid(),0);	
 	set_unblock(getpid());
 	char sched_type[6];
 	int proc_num;
@@ -47,7 +47,6 @@ int main(int argc, char const *argv[])
 				proc_list[i].pid = run_proc(proc_list[i]);
 				//block it first
 				set_block(proc_list[i].pid);
-				write_log(proc_list[i], "BLOCK");
 
 			}
 		}
@@ -60,7 +59,11 @@ int main(int argc, char const *argv[])
 				if (RR_turn>=500){//pop
 					RR_pop(cur_exec, RR_queue_in,RR_queue, &RR_s, &RR_e);
 					next_exec = RR_push(proc_list,proc_num, now_time,cur_exec, RR_queue_in,RR_queue, &RR_s, &RR_e);
+					if(next_exec==-1){
+						next_exec = RR_push(proc_list,proc_num, now_time,-1, RR_queue_in,RR_queue, &RR_s, &RR_e);
+					}
 					RR_turn = 0;
+
 				}
 				else
 					next_exec = cur_exec;
@@ -85,17 +88,19 @@ int main(int argc, char const *argv[])
 				set_block(proc_list[cur_exec].pid);
 
 			if (next_exec!=-1){
-				//printf("unblock %s\n",proc_list[next_exec].proc_name );
 				set_unblock(proc_list[next_exec].pid);
+				set_cpu(proc_list[next_exec].pid, 1);//child cpu is 1
 			}
 		}
 		cur_exec = next_exec;
+		//run a unit of time
 		run_unit();
 		if (cur_exec != -1)
 			proc_list[cur_exec].e_time -= 1;
 		//Check if its done
-		if(proc_list[cur_exec].e_time == 0)//done
+		if(cur_exec !=-1 && proc_list[cur_exec].e_time == 0){//done
 			waitpid(proc_list[cur_exec].pid, NULL, 0);
+		}
 		//check all process done
 		int all_done=1;
 		for (int i = 0; i < proc_num; ++i){

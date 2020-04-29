@@ -12,17 +12,20 @@ int FIFO(Proc proc_list[], int proc_num, int now_time){
 }
 int RR_push(Proc proc_list[], int proc_num, int now_time, int cur_exec, int RR_queue_in[30],int RR_queue[30],int * RR_sp, int * RR_ep){
 	for (int i = 0; i < proc_num; ++i){
-		if (i==cur_exec || RR_queue_in[i]==1)//running or in queue
+		if (cur_exec == i || RR_queue_in[i]==1)//running or in queue
 			continue;
 		if (proc_list[i].r_time <= now_time && proc_list[i].e_time > 0){//add in queue
-			RR_queue_in[i] ==1;
+			RR_queue_in[i] = 1;
 			RR_queue[(*RR_ep)%30] = i;
 			*RR_ep += 1;
 			*RR_ep %= 30;
 		}
 	}
-	if (*RR_sp != *RR_ep)//has things
+
+	
+	if (*RR_sp != *RR_ep){//has things
 		return RR_queue[*RR_sp];
+	}
 	else
 		return -1;
 }

@@ -22,6 +22,5 @@ void set_unblock(int pid);
 void set_block(int pid);
 
 int run_proc(Proc proc_i);
-void write_log(Proc proc_i, char stat[]);
 
 #endif
