@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include "proc.h"
 #include <sys/time.h>
+#include <sys/syscall.h>
+#define GET_TIME 333
+#define PRINTK 334
 void run_unit(){
 	volatile unsigned long i; for(i=0;i<1000000UL;i++);
 }
@@ -45,14 +48,18 @@ int run_proc(Proc proc_i){
 	int pid = fork();
 	if (pid == 0) {//child!
 		
-		write_log(proc_i,"START");
+		//write_log(proc_i,"START");
+		long long int start_time, end_time;
+		start_time = syscall(GET_TIME);
 		for (int i = 0; i < proc_i.e_time; i++){
 			run_unit();
-			write_log(proc_i,"RUN");	
    		}
-		write_log(proc_i,"DONE");
+		end_time = syscall(GET_TIME);
+		syscall(PRINTK, getpid(), start_time, end_time);
+		//write_log(proc_i,"DONE");
 		exit(0);
 	}
 	set_cpu(pid, 1);//child cpu is 1
+	printf("%s %d\n",proc_i.proc_name, pid);
 	return pid;
 }

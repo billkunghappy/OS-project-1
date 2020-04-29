@@ -30,10 +30,6 @@ int main(int argc, char const *argv[])
 		scanf("%s %d %d",proc_list[i].proc_name, &(proc_list[i].r_time), &(proc_list[i].e_time));
 	//sort proc list with ready time
 	qsort(proc_list,proc_num,sizeof(Proc),cmp);
-	for (int i = 0; i < proc_num; ++i)
-	{
-		printf("%s\n",proc_list[i].proc_name );
-	}
 	//schedulaing
 	int cur_exec  = -1; // currently executing proc, -1 means none proc executing
 	int next_exec = -1;
@@ -47,20 +43,17 @@ int main(int argc, char const *argv[])
 		//let's fork all the available proc!
 		for (int i = 0; i < proc_num; ++i){
 			if (proc_list[i].e_time > 0 && proc_list[i].r_time == now_time){
-				printf("run %s !\n",proc_list[i].proc_name );
 				//let's run!
 				proc_list[i].pid = run_proc(proc_list[i]);
 				//block it first
 				set_block(proc_list[i].pid);
 				write_log(proc_list[i], "BLOCK");
 
-				printf("block %s\n",proc_list[i].proc_name );
 			}
 		}
 		//check which proc to run
 		if (strcmp(sched_type,"FIFO") == 0)
 			next_exec = FIFO(proc_list, proc_num, now_time);// if can't run any, return -1
-		printf("%d, %d\n",now_time,next_exec );
 
 		if (strcmp(sched_type,"RR") == 0){
 			if (cur_exec != -1){//has proc
@@ -90,10 +83,10 @@ int main(int argc, char const *argv[])
 		if (next_exec != cur_exec){//context switch
 			if (cur_exec!=-1)//has runnging proc, give low priority
 				set_block(proc_list[cur_exec].pid);
-			printf("unblock %s\n",proc_list[next_exec].proc_name );
+
 			if (next_exec!=-1){
+				//printf("unblock %s\n",proc_list[next_exec].proc_name );
 				set_unblock(proc_list[next_exec].pid);
-				write_log(proc_list[next_exec], "UNBLOCK");
 			}
 		}
 		cur_exec = next_exec;
